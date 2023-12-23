@@ -2,6 +2,15 @@ from CourseWork import *
 import unittest
 import re
 
+# Описание тестов
+# В основу тестов лежит такие модули, как:
+# unittest и re
+# unittest -> необходимо, чтобы увидеть функции, 
+# которые тестируют бота
+# re -> регулярные выражения, которые
+# проверяют лишние данные, которые
+# не должны присутствовать
+
 class Test_CourseWork(unittest.TestCase):
     def test_DataBaseToNull(self): 
         check = True

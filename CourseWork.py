@@ -135,11 +135,9 @@ def button_handler(message):
     try:
         db = sqlite3.connect('server.db')
         sql = db.cursor()
-
-    except sqlite3.Error:
-        bot.send_message(chat_id, 'Ошибка при подключении к базе данных!')
+    except Exception as e:
+        bot.send_message(chat_id, e)
         return
-
     finally:
         if text == list_command[0]:
             type_command = 1
@@ -213,55 +211,48 @@ def button_handler(message):
         elif text == list_command[3]:
             type_command = 4
 
-            try:
-                db = sqlite3.connect('server.db')
-                sql = db.cursor()
-            except:
-                bot.send_message(chat_id, 'Ошибка при подключении к базе данных!')
-                return
-            finally:
-                sql.execute("""SELECT * from student ORDER BY name_first, name_last""")
-                
-                columnsDB = [description[0] for description in sql.description]
-                
-                column1 = []
-                column2 = []
-                column3 = []
-                column4 = []
-                column5 = []
-                column6 = []
-                for elem in sql.fetchall():
-                    column1.append(elem[0])
-                    column2.append(elem[1])                    
-                    column3.append(elem[2])
-                    column4.append(elem[3])
-                    column5.append(elem[4])
-                    column6.append(elem[5])
-                
-                db.close()
+            sql.execute("""SELECT * from student ORDER BY name_first, name_last""")
+            
+            columnsDB = [description[0] for description in sql.description]
+            
+            column1 = []
+            column2 = []
+            column3 = []
+            column4 = []
+            column5 = []
+            column6 = []
+            for elem in sql.fetchall():
+                column1.append(elem[0])
+                column2.append(elem[1])                    
+                column3.append(elem[2])
+                column4.append(elem[3])
+                column5.append(elem[4])
+                column6.append(elem[5])
+            
+            db.close()
 
-                workbook = openpyxl.Workbook()
-                sheet = workbook.active
+            workbook = openpyxl.Workbook()
+            sheet = workbook.active
 
-                # Заполнение столбцов
-                # В помощь таблица ASCII
-                for i in range(len(columnsDB)):
-                    sheet[f"{chr(i+65)}{1}"] = columnsDB[i]
-                
-                for row in range(len(column1)):
-                    sheet[row+2][0].value = column1[row]
-                    sheet[row+2][1].value = column2[row]
-                    sheet[row+2][2].value = column3[row]
-                    sheet[row+2][3].value = column4[row]
-                    sheet[row+2][4].value = column5[row]
-                    sheet[row+2][5].value = column6[row]
+            # Заполнение столбцов
+            # В помощь таблица ASCII
+            for i in range(len(columnsDB)):
+                sheet[f"{chr(i+65)}{1}"] = columnsDB[i]
+            
+            for row in range(len(column1)):
+                sheet[row+2][0].value = column1[row]
+                sheet[row+2][1].value = column2[row]
+                sheet[row+2][2].value = column3[row]
+                sheet[row+2][3].value = column4[row]
+                sheet[row+2][4].value = column5[row]
+                sheet[row+2][5].value = column6[row]
 
-                workbook.save(filename="DataBaseExcel.xlsx")
-                workbook.close()
+            workbook.save(filename="DataBaseExcel.xlsx")
+            workbook.close()
 
-                bot.send_document(chat_id, document=open("DataBaseExcel.xlsx", 'rb'))
+            bot.send_document(chat_id, document=open("DataBaseExcel.xlsx", 'rb'))
 
-                os.remove("DataBaseExcel.xlsx")
+            os.remove("DataBaseExcel.xlsx")
 
 # добавление данных в БД
 # Написать в чат -> Добавить: ....
@@ -292,8 +283,8 @@ def insert_value(message):
             
             sql.execute("""INSERT INTO student (name_first, semmestr, object, average_mark, name_group, name_last) VALUES (?, ?, ?, ?, ?, ?)""",
             (local_name,local_semmestr, local_object, local_averege_mark, local_group, local_surname))
-        except sqlite3.Error:
-            bot.send_message(chat_id, 'Ошибка при записи в базу данных!')
+        except Exception as e:
+            bot.send_message(chat_id, e)
             return
         finally:
             sql.execute("""SELECT * FROM student ORDER BY name_first ASC""")
@@ -316,8 +307,8 @@ def name_surname_handler(message):
         try: 
             db = sqlite3.connect('server.db')
             sql = db.cursor()
-        except sqlite3.Error:
-            bot.send_message(chat_id, 'Ошибка при подключении к базе данных!')
+        except Exception as e:
+            bot.send_message(chat_id, e)
             return
         finally:
             sql.execute("""SELECT object FROM student WHERE (name_first = ?) AND (name_last = ?)""", (pick_name_surname[0], pick_name_surname[1]))
@@ -337,8 +328,8 @@ def name_surname_handler(message):
         try:
             db = sqlite3.connect('server.db')
             sql = db.cursor()
-        except: 
-            bot.send_message(chat_id, 'Ошибка при удалениие данных из базы!')
+        except Exception as e: 
+            bot.send_message(chat_id, e)
             return
         finally:
             sql.execute("""DELETE FROM student WHERE (name_first = ?) AND (name_last = ?)""", (pick_name_surname[0],pick_name_surname[1]))
@@ -361,8 +352,8 @@ def delete_surname_name(message):
     try:
         db = sqlite3.connect('server.db')
         sql = db.cursor()
-    except: 
-        bot.send_message(chat_id, 'Ошибка при подключении к базе данных!')
+    except Exception as e: 
+        bot.send_message(chat_id, e)
         return
     finally:
         sql.execute("""SELECT DISTINCT name_first, name_last FROM student ORDER BY name_first""")
@@ -395,14 +386,13 @@ def delete_object(message):
     chat_id = message.chat.id
 
     global type_delete_command
-
     type_delete_command = 1
 
     try: 
         db = sqlite3.connect('server.db')
         sql = db.cursor()
-    except sqlite3.Error:
-        bot.send_message(chat_id, 'Ошибка при подключении к базе данных!')
+    except Exception as e:
+        bot.send_message(chat_id, e)
         return
     finally:
         sql.execute("""SELECT DISTINCT object FROM student""")
@@ -448,8 +438,9 @@ def delete_object_handler(message):
         try:
             db = sqlite3.connect('server.db')
             sql = db.cursor()
-        except:
-            bot.send_message(chat_id, 'Ошибка при удалениие данных из базы!')
+        except Exception as e:
+            bot.send_message(chat_id, e)
+            return
         finally:
             sql.execute("""DELETE FROM student WHERE semmestr = ?""", (local_semmestr))
             sql.execute("""SELECT * FROM student ORDER BY name_first ASC""")
@@ -471,8 +462,8 @@ def object_handler_(message):
         try:
             db = sqlite3.connect('server.db')
             sql = db.cursor()
-        except: 
-            bot.send_message(chat_id, 'Ошибка при удалениие данных из базы!')
+        except Exception as e: 
+            bot.send_message(chat_id, e)
             return
         finally:
             sql.execute("""DELETE FROM student WHERE object = ?""", (pick_object,))
@@ -513,8 +504,8 @@ def plot_scatter(message):
     #sql - запрос -> ср значение по ср.баллу по определлёному предмету 
     try:
         sql.execute("""SELECT AVG(average_mark) FROM student WHERE (semmestr = ?) AND (object = ?)""", (local_semmestr,local_object))
-    except sqlite3.Error:
-        bot.send_message(chat_id, 'Извините, возможно данные об этом студенты удалены либо не найдены!')
+    except Exception as e:
+        bot.send_message(chat_id, e)
         return
     finally:
         for elem in sql.fetchall():
@@ -528,6 +519,7 @@ def plot_scatter(message):
     y1 = np.array([local_avg_mark])
     x2 = np.array([local_semmestr])
     y2 = np.array([local_avgmark_group])
+
     plt.figure(figsize=(6,5))
     plt.axis([0,7,0,5])
     plt.text(local_semmestr, local_avg_mark, f"{round(local_avg_mark,2)}")
@@ -561,8 +553,8 @@ def plot_bar(message):
     #Вытащить Имя и Фамилию студентов по выбранному предмету и средний бал
     try:
         sql.execute("""SELECT DISTINCT name_first, average_mark, name_last FROM student WHERE object = ?""", (local_object,))
-    except sqlite3.Error:
-        bot.send_message(chat_id, 'Извините, возможно данные об этом студенты удалены либо не найдены!')
+    except Exception as e:
+        bot.send_message(chat_id, e)
         return
 
         
