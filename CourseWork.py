@@ -7,7 +7,6 @@ from russian_names import RussianNames
 import random
 import os.path
 import openpyxl
-from validation import Validation
 
 # статические массивы кнопок
 list_command = ['Узнать данные о студенте(ах)',
@@ -76,19 +75,11 @@ if (not os.path.exists('server.db')):
     db.commit()
     db.close()
 
-#соблюдение приватности
-#параметр s хранит в себе токен 
-#with open("MyToken.txt") as f:
- #   s = f.read()
-
+    
 # передаём токен боту
 token = '6469443130:AAHydTKZZSaXEp-CUxusQBiGgxO0k7CNGVc'
 bot = telebot.TeleBot('6469443130:AAHydTKZZSaXEp-CUxusQBiGgxO0k7CNGVc') 
 
-
-#################################
-######## START MESSAGE ##########
-#################################
 
 # вспомагательная функция
 # /help -> в чат
@@ -287,28 +278,12 @@ def insert_value(message):
     substrings = message.text.split(' ')
 
     if type_command == 2:
-        
-        if not Validation.check_nameorsurname(substrings[1],  substrings[2]):
-            bot.send_message(chat_id, 'Ошибка в записи имени или фамилии')
-            return           
+              
         local_name = substrings[1]
         local_surname = substrings[2]
-
-        if not Validation.check_group(substrings[3]):
-            bot.send_message(chat_id, 'Ошибка в записи группы')
-            return  
         local_group = substrings[3]
-
-        #если в списке предметов не совпадений, то стоп
-        if not object_list.__contains__(substrings[4]):
-            return
         local_object = substrings[4]
-
-        if not Validation.check_semester(substrings[5]):
-            bot.send_message(chat_id, 'Ошибка в записи семместра')
-            return 
         local_semmestr = substrings[5]
-
         local_averege_mark = substrings[6]
         
         try:
@@ -326,8 +301,8 @@ def insert_value(message):
             db.close()
             bot.send_message(chat_id, 'Запись успешна добавлена в базу данных!')
 
-# ламба-функция, которая ловит предмет,
-# который был выбран   
+# ламба-функция, которая ловит имя и фамилию,
+# которые были выбраны   
 @bot.message_handler(func=lambda m: list_name_surname.__contains__(m.text))
 def name_surname_handler(message):
     chat_id = message.chat.id
@@ -528,9 +503,6 @@ def plot_scatter(message):
     local_surname =  pick_name_surname[1]
     local_object = pick_object
 
-    #выбор Человека по предмету вывести его срединй бал
-    #также добавить точку среденго бала группы по этому предмету
-
     #Выбранный студент -> его семместр и ср.бал
     sql.execute("""SELECT semmestr, average_mark FROM student WHERE (name_first = ?) AND (object = ?) AND (name_last = ?)""", (local_name,local_object,local_surname))
 
@@ -549,8 +521,6 @@ def plot_scatter(message):
             local_avgmark_group = elem[0]
 
     db.close()
-
-    #Допущение: пусть мы знаем число семместров и оно фиксировано!!!
 
     #x-лист -> семместры
     #y-лист -> ср.бал 
@@ -622,7 +592,6 @@ def plot_bar(message):
     plt.savefig('bar.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close() #-> необходимо закрыть поток, чтобы не было наложение графиокв(потокобезопасность)
 
-    #Допущение: пусть мы знаем число семместров и оно фиксировано!!!
     bot.send_photo(chat_id,  photo=open('bar.png', 'rb'))
     
     os.remove('bar.png')
@@ -670,7 +639,6 @@ def plot_pie(message):
     plt.savefig('pie.png')
     plt.close() #-> необходимо закрыть поток, чтобы не было наложение графиокв(потокобезопасность)
 
-    #Допущение: пусть мы знаем число семместров и оно фиксировано!!!
     bot.send_photo(chat_id, photo=open('pie.png', 'rb'))
 
     os.remove('pie.png')
