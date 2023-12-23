@@ -9,28 +9,31 @@ import os.path
 import openpyxl
 from validation import Validation
 
+# статические массивы кнопок
 list_command = ['Узнать данные о студенте(ах)',
                 'Внести данные о новом студенте',
                 'Удалить данные о студенте',
                 'Посмотреть таблицу']
 
-object_list = [     "Математический анализ",
-                    "Физика.Механика",
-                    "Физика.Термодинамика",
-                    "Физика.Оптика",
-                    "Линейная алгебра", 
-                    "Технологии программирования", 
-                    "Дифференциальные уравнения"]
+object_list = [ "Математический анализ",
+                "Физика.Механика",
+                "Физика.Термодинамика",
+                "Физика.Оптика",
+                "Линейная алгебра", 
+                "Технологии программирования", 
+                "Дифференциальные уравнения"]
 
 pick_delete_comand = ['По предмету',
                       'По семместру',
                       'Полностью студента']
 
+# /переменные, который нужны в дальнейшем в алгоритме
 pick_name_surname = None
 type_command = None #костыль, чтобы вызвать определённую функцию
 type_delete_command = None
 pick_object = None
 list_name_surname = []
+
 
 #проверка на создание файла базы данных
 if (not os.path.exists('server.db')):
@@ -87,6 +90,8 @@ bot = telebot.TeleBot('6469443130:AAHydTKZZSaXEp-CUxusQBiGgxO0k7CNGVc')
 ######## START MESSAGE ##########
 #################################
 
+# вспомагательная функция
+# /help -> в чат
 @bot.message_handler(commands=['help'])
 def help_handler(message):
     chat_id = message.chat.id
@@ -105,6 +110,8 @@ def help_handler(message):
                         + "Чтобы подробнее ознакомится с моими возможностями, воспользуйся" + " " 
                         + "командой /start")
 
+# основная функция
+# /start -> в чат
 count_start = 0
 @bot.message_handler(commands=['start'])
 def start_handler(message):
@@ -265,6 +272,8 @@ def button_handler(message):
 
                 os.remove("DataBaseExcel.xlsx")
 
+# добавление данных в БД
+# Написать в чат -> Добавить: ....
 @bot.message_handler(regexp=(r'Добавить:'))
 def insert_value(message):
     chat_id = message.chat.id
@@ -277,54 +286,48 @@ def insert_value(message):
 
     substrings = message.text.split(' ')
 
-    #попытка обработка текста 1м способом
-    #обрабатывает одну строку, разделёнными пробелами
-
     if type_command == 2:
-        try:
-            if not Validation.check_nameorsurname(substrings[1],  substrings[2]):
-                bot.send_message(chat_id, 'Ошибка в записи имени или фамилии')
-                return           
-            local_name = substrings[1]
-            local_surname = substrings[2]
-
-            if not Validation.check_group(substrings[3]):
-                bot.send_message(chat_id, 'Ошибка в записи группы')
-                return  
-            local_group = substrings[3]
-
-            #если в списке предметов не совпадений, то стоп
-            if not object_list.__contains__(substrings):
-                return
-            local_object = substrings[4]
-
-            if not Validation.check_semester(substrings[5]):
-                bot.send_message(chat_id, 'Ошибка в записи семместра')
-                return 
-            local_semmestr = substrings[5]
-
-            if not Validation.check_semester(substrings[6]):
-                bot.send_message(chat_id, 'Ошибка в записи средней оценки')
-                return 
-            local_averege_mark = substrings[6]
         
-        finally:
+        if not Validation.check_nameorsurname(substrings[1],  substrings[2]):
+            bot.send_message(chat_id, 'Ошибка в записи имени или фамилии')
+            return           
+        local_name = substrings[1]
+        local_surname = substrings[2]
 
-            try:
-                db = sqlite3.connect('server.db')
-                sql = db.cursor()
-                
-                sql.execute("""INSERT INTO student (name_first, semmestr, object, average_mark, name_group, name_last) VALUES (?, ?, ?, ?, ?, ?)""",
-                (local_name,local_semmestr, local_object, local_averege_mark, local_group, local_surname))
-            except sqlite3.Error:
-                bot.send_message(chat_id, 'Ошибка при записи в базу данных!')
-                return
-            finally:
-                sql.execute("""SELECT * FROM student ORDER BY name_first ASC""")
-                db.commit()
-                db.close()
-                bot.send_message(chat_id, 'Запись успешна добавлена в базу данных!')
-    
+        if not Validation.check_group(substrings[3]):
+            bot.send_message(chat_id, 'Ошибка в записи группы')
+            return  
+        local_group = substrings[3]
+
+        #если в списке предметов не совпадений, то стоп
+        if not object_list.__contains__(substrings[4]):
+            return
+        local_object = substrings[4]
+
+        if not Validation.check_semester(substrings[5]):
+            bot.send_message(chat_id, 'Ошибка в записи семместра')
+            return 
+        local_semmestr = substrings[5]
+
+        local_averege_mark = substrings[6]
+        
+        try:
+            db = sqlite3.connect('server.db')
+            sql = db.cursor()
+            
+            sql.execute("""INSERT INTO student (name_first, semmestr, object, average_mark, name_group, name_last) VALUES (?, ?, ?, ?, ?, ?)""",
+            (local_name,local_semmestr, local_object, local_averege_mark, local_group, local_surname))
+        except sqlite3.Error:
+            bot.send_message(chat_id, 'Ошибка при записи в базу данных!')
+            return
+        finally:
+            sql.execute("""SELECT * FROM student ORDER BY name_first ASC""")
+            db.commit()
+            db.close()
+            bot.send_message(chat_id, 'Запись успешна добавлена в базу данных!')
+
+# ламба-функция, которая ловит предмет,
+# который был выбран   
 @bot.message_handler(func=lambda m: list_name_surname.__contains__(m.text))
 def name_surname_handler(message):
     chat_id = message.chat.id
@@ -369,6 +372,8 @@ def name_surname_handler(message):
             db.commit()
             db.close()
 
+# Команда удаления
+# Кнопка -> Полностью студента
 @bot.message_handler(regexp=(r'Полностью студента'))
 def delete_surname_name(message):
     chat_id = message.chat.id
@@ -408,6 +413,8 @@ def delete_surname_name(message):
 
     db.close()
 
+# Команда удаления
+# Кнопка -> По предмету
 @bot.message_handler(regexp=(r'По предмету'))
 def delete_object(message):
     chat_id = message.chat.id
@@ -431,6 +438,8 @@ def delete_object(message):
 
     bot.send_message(chat_id, 'Удаление по критерию "По предмету"', reply_markup=markup)
 
+# Команда удаления
+# Кнопка -> По семместру
 @bot.message_handler(regexp=(r'По семместру'))
 def delete_semmestr(message):
     chat_id = message.chat.id
@@ -452,11 +461,11 @@ def delete_semmestr(message):
 
     bot.send_message(chat_id, 'Список семместров', reply_markup=markup)
 
+# лямба-функция, которая ловит семместры,
+# которые были выбраны
 @bot.message_handler(regexp=(r'1|2|3|4|5|6|7'))
 def delete_object_handler(message):
     chat_id = message.chat.id
-
-    #global type_delete_command
                 
     local_semmestr = message.text
 
@@ -473,6 +482,8 @@ def delete_object_handler(message):
             db.commit()
             db.close()
 
+# лямба-функция, которая ловит список предметов,
+# которые были выбраны
 @bot.message_handler(func=lambda m:object_list.__contains__(m.text)) 
 def object_handler_(message):
     global pick_object
@@ -504,6 +515,8 @@ def object_handler_(message):
 
         bot.send_message(chat_id, 'Выбор графика', reply_markup=markup)
 
+# Команда выбора изображения
+# Кнопка -> График
 @bot.message_handler(regexp=(r'График'))
 def plot_scatter(message):
     chat_id = message.chat.id
@@ -564,6 +577,8 @@ def plot_scatter(message):
     
     os.remove('scatter.png')
 
+# Команда выбора изображения
+# Кнопка -> Гистограмма
 @bot.message_handler(regexp=(r'Гистограмма'))
 def plot_bar(message):
     chat_id = message.chat.id
@@ -612,6 +627,8 @@ def plot_bar(message):
     
     os.remove('bar.png')
 
+# Команда выбора изображения
+# Кнопка -> Диаграмма
 @bot.message_handler(regexp=(r'Диаграмма'))
 def plot_pie(message):
     chat_id = message.chat.id
@@ -658,6 +675,8 @@ def plot_pie(message):
 
     os.remove('pie.png')
 
+# лямбда-функция, которая ловит все сообщения,
+# которые не соответсвтуют функционалу бота 
 @bot.message_handler(func=lambda lmd: True)
 def catch_anybad_text(message):
     chat_id = message.chat.id
