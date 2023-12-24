@@ -77,8 +77,8 @@ if (not os.path.exists('server.db')):
 
     
 # передаём токен боту
-token = '6469443130:AAHydTKZZSaXEp-CUxusQBiGgxO0k7CNGVc'
-bot = telebot.TeleBot('6469443130:AAHydTKZZSaXEp-CUxusQBiGgxO0k7CNGVc') 
+token = 'Ваш токен'
+bot = telebot.TeleBot(token) 
 
 
 # вспомагательная функция
