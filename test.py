@@ -21,13 +21,13 @@ class Test_CourseWork(unittest.TestCase):
         sql.execute("""SELECT * FROM student WHERE rowid == 1""")
 
         for elem in sql.fetchall():
-            if (elem[0] != None 
-                and elem[1] != None 
-                and elem[2] != None
-                and elem[3] != None
-                and elem[4] != None
-                and elem[5] != None):
-                    check = True
+            if (elem[0] == None 
+                and elem[1] == None 
+                and elem[2] == None
+                and elem[3] == None
+                and elem[4] == None
+                and elem[5] == None):
+                    check = not check
         
         db.close()
 
@@ -49,14 +49,14 @@ class Test_CourseWork(unittest.TestCase):
 
         for name in all_names:
             if (re.search('\d\W', name)) != None:
-                check = False
+                check = not check
                 self.assertEqual(first=check, second=True)
                 db.close()
                 return
         
         for surname in all_surnames:
             if (re.search('\d\W', surname)) != None:
-                check = False
+                check = not check
                 self.assertEqual(first=check, second=True)
                 db.close()
                 return
@@ -80,7 +80,7 @@ class Test_CourseWork(unittest.TestCase):
         for semm in all_semmestr:
                 if ((semm < 1 or semm >7) 
                     or (re.search(r'\D\W', str(semm)) !=None)):
-                    check = False
+                    check = not check
                     self.assertEqual(first=check, second=True)
                     db.close()
                     return
@@ -104,7 +104,7 @@ class Test_CourseWork(unittest.TestCase):
         for avg in all_avg_marks:
             if ((re.search('-', str(avg)) != None)
                 or (re.search(r'\D\W', str(avg)) != None)):
-                check = False
+                check = not check
                 self.assertEqual(first=check, second=True)
                 db.close()
                 return
@@ -127,7 +127,7 @@ class Test_CourseWork(unittest.TestCase):
 
         for group in all_groups:
             if (re.search(r'\D\W', group) != None):
-                check = False
+                check = not check
                 self.assertEqual(first=check, second=True)
                 db.close()
                 return
