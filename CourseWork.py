@@ -9,7 +9,7 @@ import os.path
 import openpyxl
 
 # статические массивы кнопок
-list_command = ['Узнать данные о студенте(ах)',
+command_list = ['Узнать данные о студенте(ах)',
                 'Внести данные о новом студенте',
                 'Удалить данные о студенте',
                 'Посмотреть таблицу']
@@ -31,7 +31,7 @@ pick_name_surname = None
 type_command = None 
 type_delete_command = None
 pick_object = None
-list_name_surname = []
+NameSurnameList = []
 
 
 #проверка на создание файла базы данных
@@ -53,21 +53,21 @@ if (not os.path.exists('server.db')):
 
     rus_names = RussianNames(count = 15).get_batch()
 
-    local_group = random.randint(1,100)
+    groupDB = random.randint(1,100)
     for rn in rus_names:
-        local_name = rn.split(" ")[0]
-        local_surname = rn.split(" ")[2]
+        nameDB = rn.split(" ")[0]
+        surnameDB = rn.split(" ")[2]
 
-        local_semmestr = 1
+        semmestrDB = 1
         for i in range(len(object_list)):
             
-            local_object_list = object_list[local_semmestr-1]
-            local_mark = random.uniform(2.0, 5.0)
+            object_listDB = object_list[semmestrDB-1]
+            markDB = random.uniform(2.0, 5.0)
 
             sql.execute("""INSERT INTO student (name_first, semmestr, object, average_mark, name_group, name_last) VALUES (?, ?, ?, ?, ?, ?)""",
-            (local_name,local_semmestr, local_object_list, local_mark, local_group, local_surname))
+            (nameDB, semmestrDB, object_listDB, markDB, groupDB, surnameDB))
 
-            local_semmestr+= 1
+            semmestrDB+= 1
         
         db.commit()
      
@@ -111,13 +111,13 @@ def start_handler(message):
     global count_start
     count_start+=1
     if count_start!=1:
-        list_name_surname.clear()
+        NameSurnameList.clear()
 
     markup = types.ReplyKeyboardMarkup(row_width=1)
-    button1 = types.KeyboardButton(list_command[0])
-    button2 = types.KeyboardButton(list_command[1])
-    button3 = types.KeyboardButton(list_command[2])
-    button4 = types.KeyboardButton(list_command[3])
+    button1 = types.KeyboardButton(command_list[0])
+    button2 = types.KeyboardButton(command_list[1])
+    button3 = types.KeyboardButton(command_list[2])
+    button4 = types.KeyboardButton(command_list[3])
     
     markup.add(button1,button2,button3,button4)
 
@@ -128,7 +128,7 @@ def start_handler(message):
 def button_handler(message):
     chat_id = message.chat.id
     text = message.text
-    global list_name_surname
+    global NameSurnameList
     global type_command
 
     # Проверка на работоспособность базы данных
@@ -139,33 +139,33 @@ def button_handler(message):
         bot.send_message(chat_id, e)
         return
     finally:
-        if text == list_command[0]:
+        if text == command_list[0]:
             type_command = 1
 
             sql.execute("""SELECT DISTINCT name_first, name_last FROM student ORDER BY name_first""")
-            local_listQuery = sql.fetchall()
+            queryList = sql.fetchall()
 
-            local_name = []
-            local_surname = []
-            for elem in local_listQuery:
-                local_name.append(elem[0])
-                local_surname.append(elem[1])
+            nameList = []
+            surnameList = []
+            for elem in queryList:
+                nameList.append(elem[0])
+                surnameList.append(elem[1])
 
             markup = types.ReplyKeyboardMarkup()
 
             #если не пустой список
-            if list_name_surname:
-                list_name_surname.clear()
+            if NameSurnameList:
+                NameSurnameList.clear()
 
-            for i in range(len(local_listQuery)):
-                markup.add(types.KeyboardButton(local_name[i] + ' ' + local_surname[i]))
-                list_name_surname.append(local_name[i] + ' ' + local_surname[i])
+            for i in range(len(queryList)):
+                markup.add(types.KeyboardButton(nameList[i] + ' ' + surnameList[i]))
+                NameSurnameList.append(nameList[i] + ' ' + surnameList[i])
 
             bot.send_message(chat_id, 'Список людей', reply_markup=markup)
 
             db.close()
 
-        elif text == list_command[1]:
+        elif text == command_list[1]:
             type_command = 2
 
             bot.send_message(chat_id, 'Пожалуйста внесети данные согласно данному' + ' '
@@ -186,7 +186,7 @@ def button_handler(message):
                              +'Дифференциальные уравнения -> 7 семместр' + '\n')
             
             
-        elif text == list_command[2]:
+        elif text == command_list[2]:
             type_command = 3
 
             markup = types.ReplyKeyboardMarkup(row_width=1)
@@ -202,26 +202,26 @@ def button_handler(message):
                              'По семместру -> удаляет студента по выюранному семместру' + '\n'
                              'Полностью студента -> удаляет данные выбранного студента по всем семместрам', reply_markup=markup)
 
-        elif text == list_command[3]:
+        elif text == command_list[3]:
             type_command = 4
 
             sql.execute("""SELECT * from student ORDER BY name_first, name_last""")
             
             columnsDB = [description[0] for description in sql.description]
             
-            column1 = []
-            column2 = []
-            column3 = []
-            column4 = []
-            column5 = []
-            column6 = []
+            columnName = []
+            columnSemmestr = []
+            columnObject = []
+            columnAVGMark = []
+            columnGroup = []
+            columnSurname = []
             for elem in sql.fetchall():
-                column1.append(elem[0])
-                column2.append(elem[1])                    
-                column3.append(elem[2])
-                column4.append(elem[3])
-                column5.append(elem[4])
-                column6.append(elem[5])
+                columnName.append(elem[0])
+                columnSemmestr.append(elem[1])                    
+                columnObject.append(elem[2])
+                columnAVGMark.append(elem[3])
+                columnGroup.append(elem[4])
+                columnSurname.append(elem[5])
             
             db.close()
 
@@ -233,13 +233,13 @@ def button_handler(message):
             for i in range(len(columnsDB)):
                 sheet[f"{chr(i+65)}{1}"] = columnsDB[i]
             
-            for row in range(len(column1)):
-                sheet[row+2][0].value = column1[row]
-                sheet[row+2][1].value = column2[row]
-                sheet[row+2][2].value = column3[row]
-                sheet[row+2][3].value = column4[row]
-                sheet[row+2][4].value = column5[row]
-                sheet[row+2][5].value = column6[row]
+            for row in range(len(columnName)):
+                sheet[row+2][0].value = columnName[row]
+                sheet[row+2][1].value = columnSemmestr[row]
+                sheet[row+2][2].value = columnObject[row]
+                sheet[row+2][3].value = columnAVGMark[row]
+                sheet[row+2][4].value = columnGroup[row]
+                sheet[row+2][5].value = columnSurname[row]
 
             workbook.save(filename="DataBaseExcel.xlsx")
             workbook.close()
@@ -264,19 +264,19 @@ def insert_value(message):
 
     if type_command == 2:
               
-        local_name = substrings[1]
-        local_surname = substrings[2]
-        local_group = substrings[3]
-        local_object = substrings[4]
-        local_semmestr = substrings[5]
-        local_averege_mark = substrings[6]
+        nameDB = substrings[1]
+        surnameDB = substrings[2]
+        groupDB = substrings[3]
+        objectDB = substrings[4]
+        semmestrDB = substrings[5]
+        averege_markDB = substrings[6]
         
         try:
             db = sqlite3.connect('server.db')
             sql = db.cursor()
             
             sql.execute("""INSERT INTO student (name_first, semmestr, object, average_mark, name_group, name_last) VALUES (?, ?, ?, ?, ?, ?)""",
-            (local_name,local_semmestr, local_object, local_averege_mark, local_group, local_surname))
+            (nameDB, semmestrDB, objectDB, averege_markDB, groupDB, surnameDB))
         except Exception as e:
             bot.send_message(chat_id, e)
             return
@@ -288,7 +288,7 @@ def insert_value(message):
 
 # ламба-функция, которая ловит имя и фамилию,
 # которые были выбраны   
-@bot.message_handler(func=lambda m: list_name_surname.__contains__(m.text))
+@bot.message_handler(func=lambda m: NameSurnameList.__contains__(m.text))
 def name_surname_handler(message):
     chat_id = message.chat.id
 
@@ -307,12 +307,12 @@ def name_surname_handler(message):
         finally:
             sql.execute("""SELECT object FROM student WHERE (name_first = ?) AND (name_last = ?)""", (pick_name_surname[0], pick_name_surname[1]))
 
-            local_list_object = []
+            objectList = []
             for elem in sql.fetchall():
-                local_list_object.append(elem[0])
+                objectList.append(elem[0])
             
         markup = types.ReplyKeyboardMarkup(row_width=1)
-        for object in local_list_object:
+        for object in objectList:
             markup.add(object)
 
         bot.send_message(chat_id, 'Список предметов', reply_markup=markup)
@@ -326,7 +326,7 @@ def name_surname_handler(message):
             bot.send_message(chat_id, e)
             return
         finally:
-            sql.execute("""DELETE FROM student WHERE (name_first = ?) AND (name_last = ?)""", (pick_name_surname[0],pick_name_surname[1]))
+            sql.execute("""DELETE FROM student WHERE (name_first = ?) AND (name_last = ?)""", (pick_name_surname[0], pick_name_surname[1]))
             sql.execute("""SELECT * FROM student ORDER BY name_first ASC""")
             bot.send_message(chat_id, 'Данные успешны удалены!')
             db.commit()
@@ -339,7 +339,7 @@ def delete_surname_name(message):
     chat_id = message.chat.id
 
     global type_delete_command
-    global list_name_surname
+    global NameSurnameList
 
     type_delete_command = 3
 
@@ -351,23 +351,23 @@ def delete_surname_name(message):
         return
     finally:
         sql.execute("""SELECT DISTINCT name_first, name_last FROM student ORDER BY name_first""")
-        local_listQuery = sql.fetchall()
+        queryList = sql.fetchall()
 
-        local_name = []
-        local_surname = []
-        for elem in local_listQuery:
-            local_name.append(elem[0])
-            local_surname.append(elem[1])
+        nameList = []
+        surnameList = []
+        for elem in queryList:
+            nameList.append(elem[0])
+            surnameList.append(elem[1])
 
     markup = types.ReplyKeyboardMarkup()
 
     #если не пустой список
-    if list_name_surname:
-        list_name_surname.clear()
+    if NameSurnameList:
+        NameSurnameList.clear()
 
-    for i in range(len(local_listQuery)):
-        markup.add(types.KeyboardButton(local_name[i] + ' ' + local_surname[i]))
-        list_name_surname.append(local_name[i] + ' ' + local_surname[i])
+    for i in range(len(queryList)):
+        markup.add(types.KeyboardButton(nameList[i] + ' ' + surnameList[i]))
+        NameSurnameList.append(nameList[i] + ' ' + surnameList[i])
 
     bot.send_message(chat_id, 'Удаление по критерию "Полностью студента"', reply_markup=markup)
 
@@ -426,7 +426,7 @@ def delete_semmestr(message):
 def delete_object_handler(message):
     chat_id = message.chat.id
                 
-    local_semmestr = message.text
+    semmestrDB = message.text
 
     if type_delete_command == 2:
         try:
@@ -436,7 +436,7 @@ def delete_object_handler(message):
             bot.send_message(chat_id, e)
             return
         finally:
-            sql.execute("""DELETE FROM student WHERE semmestr = ?""", (local_semmestr))
+            sql.execute("""DELETE FROM student WHERE semmestr = ?""", (semmestrDB))
             sql.execute("""SELECT * FROM student ORDER BY name_first ASC""")
             bot.send_message(chat_id, 'Удаление по критерию "По семестру"')
             db.commit()
@@ -484,40 +484,40 @@ def plot_scatter(message):
     db = sqlite3.connect('server.db')
     sql = db.cursor()
 
-    local_name = pick_name_surname[0]
-    local_surname =  pick_name_surname[1]
-    local_object = pick_object
+    nameDB = pick_name_surname[0]
+    surnameDB =  pick_name_surname[1]
+    objectDB = pick_object
 
     #Выбранный студент -> его семместр и ср.бал
-    sql.execute("""SELECT semmestr, average_mark FROM student WHERE (name_first = ?) AND (object = ?) AND (name_last = ?)""", (local_name,local_object,local_surname))
+    sql.execute("""SELECT semmestr, average_mark FROM student WHERE (name_first = ?) AND (object = ?) AND (name_last = ?)""", (nameDB,objectDB, surnameDB))
 
     for elem in sql.fetchall():
-        local_semmestr = elem[0]
-        local_avg_mark = elem[1]
+        semmestrDB = elem[0]
+        avg_markDB = elem[1]
 
     #sql - запрос -> ср значение по ср.баллу по определлёному предмету 
     try:
-        sql.execute("""SELECT AVG(average_mark) FROM student WHERE (semmestr = ?) AND (object = ?)""", (local_semmestr,local_object))
+        sql.execute("""SELECT AVG(average_mark) FROM student WHERE (semmestr = ?) AND (object = ?)""", (semmestrDB, objectDB))
     except Exception as e:
         bot.send_message(chat_id, e)
         return
     finally:
         for elem in sql.fetchall():
-            local_avgmark_group = elem[0]
+            avgmark_groupDB = elem[0]
 
     db.close()
 
     #x-лист -> семместры
     #y-лист -> ср.бал 
-    x1 = np.array([local_semmestr])
-    y1 = np.array([local_avg_mark])
-    x2 = np.array([local_semmestr])
-    y2 = np.array([local_avgmark_group])
+    x1 = np.array([semmestrDB])
+    y1 = np.array([avg_markDB])
+    x2 = np.array([semmestrDB])
+    y2 = np.array([avgmark_groupDB])
 
     plt.figure(figsize=(6,5))
     plt.axis([0,7,0,5])
-    plt.text(local_semmestr, local_avg_mark, f"{round(local_avg_mark,2)}")
-    plt.text(local_semmestr, local_avgmark_group, f"{round(local_avgmark_group,2)}")
+    plt.text(semmestrDB, avg_markDB, f"{round(avg_markDB,2)}")
+    plt.text(semmestrDB, avgmark_groupDB, f"{round(avgmark_groupDB,2)}")
     plt.title('Scatter')
     plt.xlabel('Семместр')
     plt.ylabel('Средний бал')
@@ -525,7 +525,7 @@ def plot_scatter(message):
     plt.scatter(x1,y1)
     plt.scatter(x2,y2)
     plt.yticks(np.linspace(0, 5, 20))
-    lgd = plt.legend([local_name + ' ' + local_surname, 'Ср.бал группы'],loc ='center left', bbox_to_anchor=(1,0.5))
+    lgd = plt.legend([nameDB + ' ' + surnameDB, 'Ср.бал группы'],loc ='center left', bbox_to_anchor=(1,0.5))
     plt.savefig("scatter.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()
     bot.send_photo(chat_id, photo=open('scatter.png', 'rb'))
@@ -541,24 +541,24 @@ def plot_bar(message):
     db = sqlite3.connect('server.db')
     sql = db.cursor()
 
-    local_object = pick_object
+    objectDB = pick_object
 
     #Вытащить Имя и Фамилию студентов по выбранному предмету и средний бал
     try:
-        sql.execute("""SELECT DISTINCT name_first, average_mark, name_last FROM student WHERE object = ?""", (local_object,))
+        sql.execute("""SELECT DISTINCT name_first, average_mark, name_last FROM student WHERE object = ?""", (objectDB,))
     except Exception as e:
         bot.send_message(chat_id, e)
         return
 
         
-    list_all_names = []
-    list_avg_mark = []
+    all_namesList = []
+    avg_markList = []
     for elem in sql.fetchall():
-        list_all_names.append(elem[0] + ' ' + elem[2])
-        list_avg_mark.append(elem[1])
+        all_namesList.append(elem[0] + ' ' + elem[2])
+        avg_markList.append(elem[1])
 
     index = 0
-    for name in list_all_names:
+    for name in all_namesList:
         if name == pick_name_surname[0] + ' ' + pick_name_surname[1]:
             break
         else:
@@ -568,11 +568,11 @@ def plot_bar(message):
 
     plt.title('bar')
     plt.yticks(np.linspace(0,5,20))
-    plt.text(index, list_avg_mark[index],f"{round(list_avg_mark[index],2)}")
+    plt.text(index, avg_markList[index],f"{round(avg_markList[index],2)}")
 
-    plt.bar(np.arange(len(list_avg_mark)),list_avg_mark, color = 'blue')
-    plt.bar(np.array(index),list_avg_mark[index], color = 'red')
-    lgd = plt.legend(['Балы других студентов', list_all_names[index]],loc ='center left', bbox_to_anchor=(1,0.5))
+    plt.bar(np.arange(len(avg_markList)), avg_markList, color = 'blue')
+    plt.bar(np.array(index), avg_markList[index], color = 'red')
+    lgd = plt.legend(['Балы других студентов', all_namesList[index]],loc ='center left', bbox_to_anchor=(1,0.5))
 
     plt.savefig('bar.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
     plt.close()
@@ -589,10 +589,10 @@ def plot_pie(message):
     db = sqlite3.connect('server.db')
     sql = db.cursor()
 
-    local_object = pick_object
+    objectDB = pick_object
 
     #Вытащить Имя и Фамиля студентов по выбранному предмету и средний бал
-    sql.execute("""SELECT DISTINCT name_first, average_mark, name_last FROM student WHERE object = ?""", (local_object,))
+    sql.execute("""SELECT DISTINCT name_first, average_mark, name_last FROM student WHERE object = ?""", (objectDB,))
 
     labels = []
     values = []
