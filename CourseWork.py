@@ -28,7 +28,7 @@ pick_delete_comand = ['По предмету',
 
 # /переменные, который нужны в дальнейшем в алгоритме
 pick_name_surname = None
-type_command = None #костыль, чтобы вызвать определённую функцию
+type_command = None 
 type_delete_command = None
 pick_object = None
 list_name_surname = []
@@ -188,12 +188,6 @@ def button_handler(message):
             
         elif text == list_command[2]:
             type_command = 3
-
-            #добавить выбор типа удаления:
-            #вводится имя студента, после предлагается тип удаления
-            #1 -> по предмету
-            #2 -> по семестру
-            #3 -> полноостью по имени удаляются все данные по всем семместрам
 
             markup = types.ReplyKeyboardMarkup(row_width=1)
 
@@ -533,8 +527,7 @@ def plot_scatter(message):
     plt.yticks(np.linspace(0, 5, 20))
     lgd = plt.legend([local_name + ' ' + local_surname, 'Ср.бал группы'],loc ='center left', bbox_to_anchor=(1,0.5))
     plt.savefig("scatter.png", bbox_extra_artists=(lgd,), bbox_inches='tight')
-    plt.close() #-> необходимо закрыть поток, чтобы не было наложение графиокв(потокобезопасность)
-
+    plt.close()
     bot.send_photo(chat_id, photo=open('scatter.png', 'rb'))
     
     os.remove('scatter.png')
@@ -582,8 +575,7 @@ def plot_bar(message):
     lgd = plt.legend(['Балы других студентов', list_all_names[index]],loc ='center left', bbox_to_anchor=(1,0.5))
 
     plt.savefig('bar.png', bbox_extra_artists=(lgd,), bbox_inches='tight')
-    plt.close() #-> необходимо закрыть поток, чтобы не было наложение графиокв(потокобезопасность)
-
+    plt.close()
     bot.send_photo(chat_id,  photo=open('bar.png', 'rb'))
     
     os.remove('bar.png')
@@ -629,7 +621,7 @@ def plot_pie(message):
     plt.title('Pie')
     plt.pie(values, labels = labels, explode=explode,shadow=True,autopct='%1.1f%%',startangle=180)
     plt.savefig('pie.png')
-    plt.close() #-> необходимо закрыть поток, чтобы не было наложение графиокв(потокобезопасность)
+    plt.close() 
 
     bot.send_photo(chat_id, photo=open('pie.png', 'rb'))
 
